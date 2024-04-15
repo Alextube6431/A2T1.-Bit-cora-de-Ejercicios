@@ -1,0 +1,154 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+public class JacobiMethodGUI extends JFrame implements ActionListener {
+    private JTextField[][] camposCoeficientes;
+    private JTextField[] camposConstantes;
+    private JTextField campoMaxIteraciones;
+    private JTextField campoTolerancia;
+    private JTextArea areaSolucion;
+
+    public JacobiMethodGUI() {
+        setTitle("Resolutor del Método de Jacobi");
+        setSize(500, 400);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        // Panel de entrada
+        JPanel panelEntrada = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        // Campos de coeficientes
+        camposCoeficientes = new JTextField[3][3];
+        JLabel etiquetaCoeficientes = new JLabel("Coeficientes:");
+        panelEntrada.add(etiquetaCoeficientes, gbc);
+
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                gbc.gridx++;
+                camposCoeficientes[i][j] = new JTextField(5);
+                panelEntrada.add(camposCoeficientes[i][j], gbc);
+            }
+            gbc.gridx = 0;
+            gbc.gridy++;
+        }
+
+        // Campos de constantes
+        camposConstantes = new JTextField[3];
+        JLabel etiquetaConstantes = new JLabel("Constantes:");
+        gbc.gridy++;
+        panelEntrada.add(etiquetaConstantes, gbc);
+        gbc.gridy++;
+
+        for (int i = 0; i < 3; i++) {
+            camposConstantes[i] = new JTextField(5);
+            panelEntrada.add(camposConstantes[i], gbc);
+            gbc.gridy++;
+        }
+
+        // Campo de máximo de iteraciones
+        JLabel etiquetaMaxIteraciones = new JLabel("Máx. Iteraciones:");
+        gbc.gridy++;
+        panelEntrada.add(etiquetaMaxIteraciones, gbc);
+        gbc.gridy++;
+
+        campoMaxIteraciones = new JTextField(5);
+        panelEntrada.add(campoMaxIteraciones, gbc);
+
+        // Campo de tolerancia
+        JLabel etiquetaTolerancia = new JLabel("Tolerancia:");
+        gbc.gridy++;
+        panelEntrada.add(etiquetaTolerancia, gbc);
+        gbc.gridy++;
+
+        campoTolerancia = new JTextField(5);
+        panelEntrada.add(campoTolerancia, gbc);
+
+        // Botón de resolver
+        JButton botonResolver = new JButton("Resolver");
+        botonResolver.addActionListener(this);
+        gbc.gridy++;
+        panelEntrada.add(botonResolver, gbc);
+
+        add(panelEntrada, BorderLayout.WEST);
+
+        // Área de solución
+        areaSolucion = new JTextArea();
+        areaSolucion.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(areaSolucion);
+        add(scrollPane, BorderLayout.CENTER);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        // Analizar entrada
+        int n = 3; // Suponiendo 3 ecuaciones para simplificar
+        double[][] coeficientes = new double[n][n];
+        double[] constantes = new double[n];
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                coeficientes[i][j] = Double.parseDouble(camposCoeficientes[i][j].getText());
+            }
+            constantes[i] = Double.parseDouble(camposConstantes[i].getText());
+        }
+
+        int maxIteraciones = Integer.parseInt(campoMaxIteraciones.getText());
+        double tolerancia = Double.parseDouble(campoTolerancia.getText());
+
+        // Resolver usando el método de Jacobi
+        double[] solucion = jacobi(coeficientes, constantes, maxIteraciones, tolerancia);
+
+        // Mostrar solución
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < solucion.length; i++) {
+            sb.append("x").append(i).append(" = ").append(solucion[i]).append("\n");
+        }
+        areaSolucion.setText(sb.toString());
+    }
+
+    public double[] jacobi(double[][] coeficientes, double[] constantes, int maxIteraciones, double tolerancia) {
+        int n = constantes.length;
+        double[] solucionAnterior = new double[n];
+        double[] solucionActual = new double[n];
+
+        for (int i = 0; i < n; i++) {
+            solucionActual[i] = constantes[i] / coeficientes[i][i];
+        }
+
+        for (int iter = 1; iter <= maxIteraciones; iter++) {
+            for (int i = 0; i < n; i++) {
+                double suma = constantes[i];
+                for (int j = 0; j < n; j++) {
+                    if (i != j) {
+                        suma -= coeficientes[i][j] * solucionActual[j];
+                    }
+                }
+                solucionAnterior[i] = solucionActual[i];
+                solucionActual[i] = suma / coeficientes[i][i];
+            }
+
+            double maxDif = 0.0;
+            for (int i = 0; i < n; i++) {
+                double dif = Math.abs(solucionActual[i] - solucionAnterior[i]);
+                if (dif > maxDif) {
+                    maxDif = dif;
+                }
+            }
+
+            if (maxDif < tolerancia) {
+                return solucionActual;
+            }
+        }
+
+        return solucionActual;
+    }
+
+    public static void main(String[] args) {
+        JacobiMethodGUI frame = new JacobiMethodGUI();
+        frame.setVisible(true);
+    }
+}
