@@ -1,0 +1,74 @@
+import java.util.Scanner;
+
+public class ReglaSimpson{
+    // Función a integrar expresada por medio de simbolos en codigo
+    public static double f(double x) {
+        return x * x * x / (1 + Math.sqrt(x));
+    }
+
+    // Aplicación de la Regla de Simpson con detalles explicativos
+    public static double simpsonRegla(double a, double b, int n) {
+        if (n % 2 != 0) {
+            throw new IllegalArgumentException("El número de segmentos debe ser par.");
+        }
+        System.out.println("==========================================================");
+        System.out.println("Usando la Regla de Simpson para estimar la integral:");
+        System.out.println("Límites de integración: a = " + a + ", b = " + b);
+        System.out.println("Número de segmentos: " + n);
+
+        double h = (b - a) / n; // Tamaño de cada segmento
+        System.out.println("Tamaño de cada segmento (h): " + h);
+
+        // Evaluación de la función en los extremos
+        double integral = f(a) + f(b);
+        System.out.println("Evaluación de f(a) = " + f(a));
+        System.out.println("Evaluación de f(b) = " + f(b));
+        System.out.println("Base de la integral (suma de extremos): " + integral);
+
+        // Suma de los términos impares (coeficiente 4)
+        System.out.println("Calculando la suma de los términos impares...");
+        for (int i = 1; i < n; i += 2) {
+            double x = a + i * h;
+            double term = 4 * f(x);
+            System.out.println("f(" + x + ") * 4 = " + term);
+            integral += term;
+        }
+
+        // Suma de los términos pares (coeficiente 2)
+        System.out.println("Calculando la suma de los términos pares...");
+        for (int i = 2; i < n; i += 2) {
+            double x = a + i * h;
+            double term = 2 * f(x);
+            System.out.println("f(" + x + ") * 2 = " + term);
+            integral += term;
+        }
+
+        // Multiplicación por h/3 para el resultado final
+        integral *= (h / 3);
+        System.out.println("Multiplicando por h/3 para obtener el resultado final.");
+        System.out.println("Estimación de la integral: " + integral);
+
+        return integral;
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Ingrese el límite inferior de integración: ");
+        double a = scanner.nextDouble();
+
+        System.out.print("Ingrese el límite superior de integración: ");
+        double b = scanner.nextDouble();
+
+        System.out.print("Ingrese el número de segmentos (debe ser par): ");
+        int n = scanner.nextInt();
+
+        if (n % 2 != 0) {
+            System.out.println("El número de segmentos debe ser par.");
+            return;
+        }
+
+        // Aplicar la Regla de Simpson
+        simpsonRegla(a, b, n);
+    }
+}
