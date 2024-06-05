@@ -1,0 +1,84 @@
+import java.util.Scanner;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
+public class Adam_Bashforth {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        ScriptEngineManager mgr = new ScriptEngineManager();
+        ScriptEngine engine = mgr.getEngineByName("JavaScript");
+
+        // Pedir la ecuación diferencial de segundo orden
+        System.out.println("Ingrese la ecuación diferencial de segundo orden en función de t, y, y' (por ejemplo, t - y - v): ");
+        String equation = scanner.nextLine();
+
+        // Pedir los datos iniciales
+        System.out.println("Ingrese el valor inicial de t (t0): ");
+        double t0 = scanner.nextDouble();
+        
+        System.out.println("Ingrese el valor inicial de y (y0): ");
+        double y0 = scanner.nextDouble();
+
+        System.out.println("Ingrese el valor inicial de y' (v0): ");
+        double v0 = scanner.nextDouble();
+        
+        System.out.println("Ingrese el tamaño del paso (h): ");
+        double h = scanner.nextDouble();
+        
+        System.out.println("Ingrese el número de pasos (n): ");
+        int n = scanner.nextInt();
+
+        // Inicializar variables
+        double[] t = new double[n + 1];
+        double[] y = new double[n + 1];
+        double[] v = new double[n + 1];
+        
+        t[0] = t0;
+        y[0] = y0;
+        v[0] = v0;
+
+        // Calcular los primeros valores usando el método de Euler
+        for (int i = 1; i < 3 && i <= n; i++) {
+            t[i] = t[i - 1] + h;
+            double f_v = evaluateFunction(engine, equation, t[i - 1], y[i - 1], v[i - 1]);
+            y[i] = y[i - 1] + h * v[i - 1];
+            v[i] = v[i - 1] + h * f_v;
+        }
+
+        // Método de Adams-Bashforth de tercer orden
+        for (int i = 3; i <= n; i++) {
+            t[i] = t[i - 1] + h;
+
+            double f_v_n = evaluateFunction(engine, equation, t[i - 1], y[i - 1], v[i - 1]);
+            double f_v_n1 = evaluateFunction(engine, equation, t[i - 2], y[i - 2], v[i - 2]);
+            double f_v_n2 = evaluateFunction(engine, equation, t[i - 3], y[i - 3], v[i - 3]);
+            
+            y[i] = y[i - 1] + h * (23 * v[i - 1] - 16 * v[i - 2] + 5 * v[i - 3]) / 12.0;
+            v[i] = v[i - 1] + h * (23 * f_v_n - 16 * f_v_n1 + 5 * f_v_n2) / 12.0;
+        }
+
+        // Imprimir los resultados en una tabla
+        System.out.println("Resultados:");
+        System.out.println("-------------------------------------");
+        System.out.println("|   t   |   y   |   v   |");
+        System.out.println("-------------------------------------");
+        for (int i = 0; i <= n; i++) {
+            System.out.printf("| %5.2f | %5.2f | %5.2f |\n", t[i], y[i], v[i]);
+        }
+        System.out.println("-------------------------------------");
+
+        scanner.close();
+    }
+
+    private static double evaluateFunction(ScriptEngine engine, String equation, double t, double y, double v) {
+        String expression = equation.replace("t", Double.toString(t)).replace("y", Double.toString(y)).replace("v", Double.toString(v));
+        try {
+            return (double) engine.eval(expression);
+        } catch (ScriptException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+}
